@@ -25,15 +25,16 @@ def classify_question(state: AgentState):
     prompt = f"""
     You are a classifier for the 'ITC BLIDA' (ITCommunity Club) AI assistant.
     Determine if the user's question requires querying the Knowledge Graph about the club's internal data or if it is general conversation.
-    
+
     Knowledge Graph covers:
-    - Members/Employees (names, roles)
-    - Departments (Development, Design, Marketing, Content Creation, HR)
-    - Events (ITC TALKS, ITCup, WelcomeDay)
-    - Projects/Workshops
+    - Members (names, roles, departments, what they organize)
+    - Departments and their focus areas
+    - Events (ITC TALKS, ITCup, WelcomeDay, DesignCraft, Open Source Sprint)
+    - Projects/Workshops (e.g., Smart Campus App, Club Website Revamp, AI Study Track)
+    - Partners and sponsors supporting events or projects
 
     Respond with ONLY 'graph' or 'general'.
-    
+
     Question: {question}
     """
     response = LLM.invoke([HumanMessage(content=prompt)])
@@ -52,18 +53,25 @@ def run_general_agent(state: AgentState):
 def run_graph_agent(state: AgentState):
     """Generates Cypher, queries Neo4j, and formulates an answer."""
     question = state["question"]
-    
+
     # 1. Generate Cypher
     schema_desc = """
-    Nodes: 
-    - Member (id, name, role)  // 'Member' instead of 'Employee' for a club
-    - Department (name)        // e.g. Development, Design, Marketing
-    - Event (name, date)       // e.g. ITC TALKS, ITCup
-    
+    Nodes:
+    - Member (id, name, role, joined, expertise)
+    - Department (name, focus)
+    - Event (name, date, description, location, theme, format)
+    - Project (name, year, status, description)
+    - Partner (name, kind, focus)
+
     Relationships:
     - (:Member)-[:MEMBER_OF]->(:Department)
     - (:Member)-[:ORGANIZES]->(:Event)
+    - (:Member)-[:CONTRIBUTES_TO {scope}]->(:Project)
     - (:Department)-[:HOSTS]->(:Event)
+    - (:Department)-[:LEADS]->(:Project)
+    - (:Project)-[:FEATURED_IN]->(:Event)
+    - (:Partner)-[:SPONSORS]->(:Event)
+    - (:Partner)-[:SUPPORTS]->(:Project)
     """
     cypher_prompt = f"""
     Task: Generate a Cypher query for Neo4j to answer the question for ITC BLIDA club.
