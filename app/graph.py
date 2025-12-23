@@ -30,7 +30,9 @@ class Neo4jGraph:
         queries = [
             "CREATE CONSTRAINT IF NOT EXISTS FOR (m:Member) REQUIRE m.id IS UNIQUE",
             "CREATE CONSTRAINT IF NOT EXISTS FOR (d:Department) REQUIRE d.name IS UNIQUE",
-            "CREATE CONSTRAINT IF NOT EXISTS FOR (e:Event) REQUIRE e.name IS UNIQUE"
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (e:Event) REQUIRE e.name IS UNIQUE",
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (p:Project) REQUIRE p.name IS UNIQUE",
+            "CREATE CONSTRAINT IF NOT EXISTS FOR (p:Partner) REQUIRE p.name IS UNIQUE"
         ]
         for q in queries:
             self.query(q)
